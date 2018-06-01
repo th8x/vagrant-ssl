@@ -24,21 +24,32 @@ openssl req -x509 -new -nodes -key myCA.key -sha256 -days 1825 -out myCA.pem
 2. Copy the file to /usr/local/bin/: `mv ssl.sh /usr/local/bin/ssl`
 3. Make it executable `chmod u+x /usr/local/bin/ssl`
 4. Create a directory *certs* in your root directory
-5. `cd certs` and run `ssl yourlocaldomain.dev`
+5. `cd certs` and run `ssl yourlocaldomain.local`
 
-## Add SSL to vagrant 
-1. `vagrant ssh`
-2. `sudo nano /etc/apache2/sites-available/default-ssl.conf`
+## Install SSL on Vagrant’s Apache
+1. Go to `vagrant ssh`
+2. Edit defautl-ssl.conf `sudo nano /etc/apache2/sites-available/default-ssl.conf`
 3. Find `SSLCertificateFile /etc/ssl/certs/ssl-cert-snakeoil.pem` replace with your `.pem` file path.
 4. Find `SSLCertificateKeyFile  /etc/ssl/private/ssl-cert-snakeoil.key` replace with your `.key` file path.
-5. Edit your virtual host `sudo nano /etc/site-enables/yourlocaldomain.dev.conf`
-6. Add bellow `DocumentRoot...`
+
+## Install SSL on your virtual host
+1. Edit your virtual host `sudo nano /etc/site-enables/yourlocaldomain.local.conf`
+2. Change default listen port `<VirtualHost *:80>` to `<VirtualHost *:443>`
+3. Add this code bellow `DocumentRoot...`
 ```
   SSLEngine on
-  SSLCertificateFile /var/www/qmac.local/certs/qmac.local.crt
-  SSLCertificateKeyFile /var/www/qmac.local/certs/qmac.local.key
+  SSLCertificateFile /var/www/yourlocaldomain.local/certs/yourlocaldomain.local.crt
+  SSLCertificateKeyFile /var/www/yourlocaldomain.local/certs/yourlocaldomain.local.key
   ```
- 7. Restart Apache `sudo service apache2 restart`
+ 4. Redirect http to https, add this code at the top (before `<VirtualHost *:443>` block)
+ ```
+ <VirtualHost *:80>
+        ServerName yourlocaldomain.dev
+        DocumentRoot /var/www/yourlocaldomain.local/public
+        Redirect permanent / https://yourlocaldomain.local/
+</VirtualHost>
+ ```
+ 5. Restart Apache `sudo service apache2 restart`
  
  All done.
  
